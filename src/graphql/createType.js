@@ -12,9 +12,6 @@ function createType(ormModel, getType) {
       ormModel.propTypes,
       (field) => {
         const type = mapPropTypeToGraphQLType(field);
-        if (type === undefined) {
-          console.log(field)
-        }
         return { type };
       }
     );

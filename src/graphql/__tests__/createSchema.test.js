@@ -5,7 +5,7 @@ import { Schema } from 'redux-orm';
 import createSchema from '../createSchema';
 import { Credentials, User, Todo, Tag } from './testModels'
 
-test('something', (t) => {
+test('creates a queryable schema', async (t) => {
   const ormSchema = new Schema();
   ormSchema.register(Credentials, User, Todo, Tag);
   const models = ormSchema.getModelClasses();
@@ -13,11 +13,9 @@ test('something', (t) => {
   const graphQlSchema = createSchema(models);
 
   const session = ormSchema.withMutations(ormSchema.getDefaultState());
+  session.Todo.create({ title: 'Something', done: false, user: 0 });
   session.User.create({ name: 'Alexander', age: 120 });
-  session.User.create({ name: 'Christiansson', age: 133 });
   session.Credentials.create({ username: 'hello', password: 'pizza123', user: 0 });
-  session.Todo.create({ name: 'Something', done: false, user: 0 });
-  session.Todo.create({ name: 'Important', done: true });
 
   const query = `{
     todo {
@@ -35,11 +33,22 @@ test('something', (t) => {
     }
   }`;
 
-  const result = graphql(
+
+  const result = await graphql(
     graphQlSchema,
     query,
     { session },
   );
 
-  result.then(r => console.log(r.data.todo[0].user));
+  const resultTodo = result.data.todo[0];
+  t.is(resultTodo.title, 'Something');
+  t.is(resultTodo.done, false);
+
+  const resultUser = resultTodo.user;
+  t.is(resultUser.name, 'Alexander');
+  t.is(resultUser.age, 120);
+
+  const resultCredentials = resultUser.credentials;
+  t.is(resultCredentials.username, 'hello');
+  t.is(resultCredentials.password, 'pizza123');
 });

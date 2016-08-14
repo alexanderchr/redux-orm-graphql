@@ -1,10 +1,21 @@
 import { GraphQLSchema, GraphQLObjectType, GraphQLList } from 'graphql';
 import createType from './createType';
-import createQueryField from './createQueryField';
+
+function createQueryField(type) {
+  return {
+    type: new GraphQLList(type),
+    resolve: (root) => {
+      return root.session[type.name].all().toModelArray();
+    }
+  };
+}
 
 function createRootQuery(types) {
   const fields = types.reduce(
-    (acc, type) => { acc[type.name.toLowerCase()] = createQueryField(type); return acc; },
+    (acc, type) => {
+      acc[type.name.toLowerCase()] = createQueryField(type);
+      return acc;
+    },
     {}
   );
 
