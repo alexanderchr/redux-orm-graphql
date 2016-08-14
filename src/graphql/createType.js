@@ -2,13 +2,21 @@ import { GraphQLObjectType, GraphQLString, GraphQLList } from 'graphql';
 import { OneToOne } from 'redux-orm';
 import mapValues from 'lodash.mapvalues';
 
+import mapPropTypeToGraphQLType from './mapPropTypeToGraphQLType';
+
 function createType(ormModel, getType) {
   function fieldsThunk() {
     const idField = { [ormModel.idAttribute]: { type: GraphQLString } };
 
     const propFields = mapValues(
       ormModel.propTypes,
-      (field) => ({ type: GraphQLString })
+      (field) => {
+        const type = mapPropTypeToGraphQLType(field);
+        if (type === undefined) {
+          console.log(field)
+        }
+        return { type };
+      }
     );
 
     // 'fk'

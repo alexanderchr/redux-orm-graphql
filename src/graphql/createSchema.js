@@ -19,7 +19,7 @@ function createSchema(models) {
   // to create relation fields
   let graphQLTypes;
   const getType = (name) => graphQLTypes.filter(x => x.name == name)[0];
-  graphQlTypes = models.map(m => createType(m, getType));
+  graphQLTypes = models.map(m => createType(m, getType));
 
   const rootQuery = createRootQuery(graphQLTypes);
 
